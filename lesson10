@@ -1,0 +1,209 @@
+'''
+1. Реализовать класс Matrix (матрица).
+Обеспечить перегрузку конструктора класса (метод __init__()), который должен принимать данные (список списков) для формирования матрицы.
+Подсказка: матрица — система некоторых математических величин, расположенных в виде прямоугольной схемы.
+Примеры матриц: 3 на 2, 3 на 3, 2 на 4.
+31 22
+37 43
+51 86
+3 5 32
+2 4 6
+-1 64 -8
+3 5 8 3
+8 3 7 1
+Следующий шаг — реализовать перегрузку метода __str__() для вывода матрицы в привычном виде.
+Далее реализовать перегрузку метода __add__() для  сложения двух объектов класса Matrix (двух матриц). Результатом сложения должна быть новая матрица.
+Подсказка: сложение элементов матриц выполнять поэлементно. Первый элемент первой строки первой матрицы складываем с первым элементом первой строки второй матрицы и пр.
+'''
+from collections import defaultdict
+
+
+class Matrix:
+    def __init__(self, elements):
+        if len(elements) < 2:
+            raise ValueError('Для формирования матрицы необходимо минимум 2 списка.')
+        self.__elements = []
+        self.__max_elem_len = defaultdict(int)
+        row_len = 0
+        for row in elements:
+            if row_len and len(row) != row_len:
+                raise ValueError('Необходимо равное количество элементов в строках матрицы.')
+            self.__elements.append(row)
+            row_len = len(row)
+            for i, elem in enumerate(row):
+                self.__max_elem_len[str(i)] = max(self.__max_elem_len[str(i)], len(str(elem)))
+
+    def __str__(self):
+        return '\n'.join([' '.join(map(lambda x: f'{x[1]:>{self.__max_elem_len[str(x[0])]}}', enumerate(i))) for i in self.__elements])
+
+    def __add__(self, other):
+        return Matrix([[sum(j) for j in zip(*i)] for i in zip(self.__elements, other.__elements)])
+
+
+matrix_a = Matrix([[31, 2222], [37, 43], [51, 86]])
+print(matrix_a, end='\n\n')
+matrix_b = Matrix([[3, 5, 32], [2, 4, 6], [-123, 64, -8]])
+print(matrix_b, end='\n\n')
+print(matrix_a + matrix_b)
+
+'''
+2. Реализовать проект расчёта суммарного расхода ткани на производство одежды.
+Основная сущность (класс) этого проекта — одежда, которая может иметь определённое название.
+К типам одежды в этом проекте относятся пальто и костюм.
+У этих типов одежды существуют параметры: размер (для пальто) и рост (для костюма).
+Это могут быть обычные числа: V и H соответственно.
+Для определения расхода ткани по каждому типу одежды использовать формулы: для пальто (V/6.5 + 0.5), для костюма (2*H + 0.3).
+Проверить работу этих методов на реальных данных.
+Выполнить общий подсчёт расхода ткани.
+Проверить на практике полученные на этом уроке знания.
+Реализовать абстрактные классы для основных классов проекта и проверить работу декоратора @property.
+'''
+
+from abc import ABC, abstractmethod
+import random
+
+
+class Cloth(ABC):
+    title = 'Одежда'
+
+    def __init__(self, name):
+        self.name = name
+
+    @abstractmethod
+    def tissue_consumption(self):
+        pass
+
+
+class Coat(Cloth):
+    title = 'Пальто'
+
+    def __init__(self, size, name=None):
+        super().__init__(name)
+        self.size = size
+
+    @property
+    def size(self):
+        return self.__size
+
+    @size.setter
+    def size(self, new_size):
+        if new_size < 10:
+            self.__size = 10
+        elif new_size > 100:
+            self.__size = 100
+        else:
+            self.__size = new_size
+
+    def tissue_consumption(self):
+        return self.size / 6.5 + 0.5
+
+
+class Suit(Cloth):
+    title = 'Костюм'
+
+    def __init__(self, height, name=None):
+        super().__init__(name)
+        self.height = height
+
+    @property
+    def height(self):
+        return self.__height
+
+    @height.setter
+    def height(self, new_height):
+        if new_height < 50:
+            self.__height = 50
+        elif new_height > 200:
+            self.__height = 200
+        else:
+            self.__height = new_height
+
+    def tissue_consumption(self):
+        return 2 * self.height + 0.3
+
+
+coats = [Coat(random.randint(10, 100)) for _ in range(10)]
+suits = [Suit(random.randint(50, 200)) for _ in range(10)]
+
+print('Итого ткани: {:.2f}'.format(sum(map(Coat.tissue_consumption, coats)) + sum(map(Suit.tissue_consumption, suits))))
+
+'''
+3. Осуществить программу работы с органическими клетками, состоящими из ячеек.
+Необходимо создать класс «Клетка».
+В его конструкторе инициализировать параметр, соответствующий количеству ячеек клетки (целое число).
+В классе должны быть реализованы методы перегрузки арифметических операторов: сложение (__add__()), вычитание (__sub__()), умножение (__mul__()), деление (__floordiv____truediv__()).
+Эти методы должны применяться только к клеткам и выполнять увеличение, уменьшение, умножение и округление до целого числа деления клеток соответственно.
+Сложение. Объединение двух клеток. При этом число ячеек общей клетки должно равняться сумме ячеек исходных двух клеток.
+Вычитание. Участвуют две клетки. Операцию необходимо выполнять, только если разность количества ячеек двух клеток больше нуля, иначе выводить соответствующее сообщение.
+Умножение. Создаётся общая клетка из двух. Число ячеек общей клетки — произведение количества ячеек этих двух клеток.
+Деление. Создаётся общая клетка из двух. Число ячеек общей клетки определяется как целочисленное деление количества ячеек этих двух клеток.
+В классе необходимо реализовать метод make_order(), принимающий экземпляр класса и количество ячеек в ряду.
+Этот метод позволяет организовать ячейки по рядам.
+Метод должен возвращать строку вида *****\n*****\n*****..., где количество ячеек между \n равно переданному аргументу.
+Если ячеек на формирование ряда не хватает, то в последний ряд записываются все оставшиеся.
+Например, количество ячеек клетки равняется 12, а количество ячеек в ряду — 5. В этом случае метод make_order() вернёт строку: *****\n*****\n**.
+Или количество ячеек клетки — 15, а количество ячеек в ряду равняется 5. Тогда метод make_order() вернёт строку: *****\n*****\n*****.
+'''
+import re
+
+
+class Cell:
+    is_abs_operations = False
+
+    def __check_instance(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError(f'Операция допустима только для объектов одного класса ({self.__class__}).')
+
+    def __init__(self, cell_num):
+        if not isinstance(cell_num, int) or cell_num < 1:
+            raise ValueError('Количество ячеек должно быть натуральным числом (1, 2, 3, ...)')
+        self.cell_num = cell_num
+
+    def __add__(self, other):  # +
+        self.__check_instance(other)
+        return Cell(self.cell_num + other.cell_num)
+
+    def __sub__(self, other):  # -
+        self.__check_instance(other)
+        if not Cell.is_abs_operations and self.cell_num < other.cell_num:
+            raise ValueError('Разность ячеек будет отрицательной. Поменяйте местами операнды.')
+        else:
+            return Cell(abs(self.cell_num - other.cell_num))
+
+    def __mul__(self, other):  # *
+        self.__check_instance(other)
+        return Cell(self.cell_num * other.cell_num)
+
+    def __floordiv__(self, other):  # //
+        self.__check_instance(other)
+        return Cell(self.cell_num // other.cell_num)
+
+    def __truediv__(self, other):  # /
+        self.__check_instance(other)
+        return Cell(int(self.cell_num / other.cell_num))  # int(7/4) == 1
+
+    def make_order(self, row_len):
+        cell_str = '*' * self.cell_num
+        splitter = '*' * row_len
+        end_pattern = r'\*' * row_len
+
+        # можно и без регулярки. захотел одной строкой
+        return print(re.sub(rf'\n{end_pattern}$', '', '\n'.join(map(lambda x: x if x else splitter, cell_str.split(splitter)))))
+
+
+print('----- 1 -----')
+Cell(12).make_order(5)
+print('----- 2 -----')
+(Cell(5) + Cell(6)).make_order(3)
+# (Cell(5) + 5).make_order(2)  # raise из __check_instance
+print('----- 3 -----')
+Cell.is_abs_operations = True
+(Cell(5) - Cell(6)).make_order(2)
+# (Cell(5) - Cell(5)).make_order(20)  # raise из __init__
+print('----- 4 -----')
+(Cell(5) * Cell(5)).make_order(5)
+print('----- 5 -----')
+(Cell(100) // Cell(5)).make_order(20)
+print('----- 6 -----')
+Cell.is_abs_operations = False
+(Cell(5) - Cell(6)).make_order(2)
